@@ -27,4 +27,4 @@ CubeMX allows to easilly configure the device to USB Virtual Com Port mode but t
 The device should be recognized as both a VCP and an HID (keyboard) so it could send keys combination and be programmed using COM.
 
 ## [ ] Programming key combos
-The VPC interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
+The VCP interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
