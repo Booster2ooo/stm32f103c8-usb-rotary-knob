@@ -30,6 +30,10 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "usbd_hid.h"
+#include "usbd_desc.h"
+#include "usbd_composite.h"
+#include "usb_descriptors.h"
 #include "usbd_cdc_if.h"
 #include "rotary.h"
 /* USER CODE END Includes */
@@ -110,7 +114,10 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+  // USB Composite configuration ...?
+  USBD_Composite_Set_Descriptor(COMPOSITE_CDC_HID_DESCRIPTOR, COMPOSITE_CDC_HID_DESCRIPTOR_SIZE);
+  USBD_Composite_Set_Classes(&USBD_CDC, &USBD_HID);
+  in_endpoint_to_class[HID_EPIN_ADDR & 0x7F] = 1;
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

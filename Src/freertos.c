@@ -28,11 +28,60 @@
 /* USER CODE BEGIN Includes */     
 #include "tim.h"
 #include "rotary.h"
+#include "usbd_hid.h"
+#include "usbd_desc.h"
+#include "usbd_composite.h"
+#include "usb_descriptors.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+extern USBD_HandleTypeDef hUsbDeviceFS;
+// USB media codes
+#define USB_HID_SCAN_NEXT 0x01
+#define USB_HID_SCAN_PREV 0x02
+#define USB_HID_STOP      0x04
+#define USB_HID_EJECT     0x08
+#define USB_HID_PAUSE     0x10
+#define USB_HID_MUTE      0x20
+#define USB_HID_VOL_UP    0x40
+#define USB_HID_VOL_DEC   0x80
 
+// USB keyboard codes
+#define USB_HID_MODIFIER_LEFT_CTRL   0x01
+#define USB_HID_MODIFIER_LEFT_SHIFT  0x02
+#define USB_HID_MODIFIER_LEFT_ALT    0x04
+#define USB_HID_MODIFIER_LEFT_GUI    0x08 // (Win/Apple/Meta)
+#define USB_HID_MODIFIER_RIGHT_CTRL  0x10
+#define USB_HID_MODIFIER_RIGHT_SHIFT 0x20
+#define USB_HID_MODIFIER_RIGHT_ALT   0x40
+#define USB_HID_MODIFIER_RIGHT_GUI   0x80
+#define USB_HID_KEY_L     0x0F
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+// USB media codes
+#define USB_HID_SCAN_NEXT 0x01
+#define USB_HID_SCAN_PREV 0x02
+#define USB_HID_STOP      0x04
+#define USB_HID_EJECT     0x08
+#define USB_HID_PAUSE     0x10
+#define USB_HID_MUTE      0x20
+#define USB_HID_VOL_UP    0x40
+#define USB_HID_VOL_DEC   0x80
+
+// USB keyboard codes
+#define USB_HID_MODIFIER_LEFT_CTRL   0x01
+#define USB_HID_MODIFIER_LEFT_SHIFT  0x02
+#define USB_HID_MODIFIER_LEFT_ALT    0x04
+#define USB_HID_MODIFIER_LEFT_GUI    0x08 // (Win/Apple/Meta)
+#define USB_HID_MODIFIER_RIGHT_CTRL  0x10
+#define USB_HID_MODIFIER_RIGHT_SHIFT 0x20
+#define USB_HID_MODIFIER_RIGHT_ALT   0x40
+#define USB_HID_MODIFIER_RIGHT_GUI   0x80
+#define USB_HID_KEY_L     0x0F
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -129,7 +178,7 @@ void StartDefaultTask(void const * argument)
 
   /* USER CODE BEGIN StartDefaultTask */
   Init_Rotary(
-    &rotary1, 
+		&rotary1,
 		ROTARYID1,
 		RCLK_GPIO_Port,
 		RCLK_Pin,
@@ -150,6 +199,44 @@ void StartDefaultTask(void const * argument)
   );
   HAL_TIM_Base_Start_IT(&htim2);
   DisableTimer();
+
+  // HID Keyboard
+	struct keyboardHID_t {
+			uint8_t id;
+			uint8_t modifiers;
+			uint8_t key1;
+			uint8_t key2;
+			uint8_t key3;
+	};
+	struct keyboardHID_t keyboardHID = {0};
+	keyboardHID.id = 1;
+	keyboardHID.modifiers = 0;
+	keyboardHID.key1 = 0;
+	keyboardHID.key2 = 0;
+	keyboardHID.key3 = 0;
+	// HID Media
+	struct mediaHID_t {
+		uint8_t id;
+		uint8_t keys;
+	};
+	struct mediaHID_t mediaHID = {0};
+	mediaHID.id = 2;
+	mediaHID.keys = 0;
+
+	mediaHID.keys = USB_HID_VOL_UP;
+	USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(struct mediaHID_t));
+	HAL_Delay(30);
+	mediaHID.keys = 0;
+	USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(struct mediaHID_t));
+	HAL_Delay(500);
+	keyboardHID.modifiers = USB_HID_MODIFIER_RIGHT_SHIFT;
+	keyboardHID.key1 = USB_HID_KEY_L;
+	USBD_HID_SendReport(&hUsbDeviceFS, &keyboardHID, sizeof(struct keyboardHID_t));
+	HAL_Delay(30);
+	keyboardHID.modifiers = 0;
+	keyboardHID.key1 = 0;
+	USBD_HID_SendReport(&hUsbDeviceFS, &keyboardHID, sizeof(struct keyboardHID_t));
+	HAL_Delay(30);
 
 	RotaryMail *rptr;
 	osEvent event;
