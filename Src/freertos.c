@@ -38,26 +38,6 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 extern USBD_HandleTypeDef hUsbDeviceFS;
-// USB media codes
-#define USB_HID_SCAN_NEXT 0x01
-#define USB_HID_SCAN_PREV 0x02
-#define USB_HID_STOP      0x04
-#define USB_HID_EJECT     0x08
-#define USB_HID_PAUSE     0x10
-#define USB_HID_MUTE      0x20
-#define USB_HID_VOL_UP    0x40
-#define USB_HID_VOL_DEC   0x80
-
-// USB keyboard codes
-#define USB_HID_MODIFIER_LEFT_CTRL   0x01
-#define USB_HID_MODIFIER_LEFT_SHIFT  0x02
-#define USB_HID_MODIFIER_LEFT_ALT    0x04
-#define USB_HID_MODIFIER_LEFT_GUI    0x08 // (Win/Apple/Meta)
-#define USB_HID_MODIFIER_RIGHT_CTRL  0x10
-#define USB_HID_MODIFIER_RIGHT_SHIFT 0x20
-#define USB_HID_MODIFIER_RIGHT_ALT   0x40
-#define USB_HID_MODIFIER_RIGHT_GUI   0x80
-#define USB_HID_KEY_L     0x0F
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -82,11 +62,6 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 #define USB_HID_MODIFIER_RIGHT_ALT   0x40
 #define USB_HID_MODIFIER_RIGHT_GUI   0x80
 #define USB_HID_KEY_L     0x0F
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -104,6 +79,7 @@ osThreadId blinkTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+void Composite_USB_DEVICE_Init(void);
 void DisableTimer();
 void Blink();
 void Switch_Rising(uint32_t rotary_id);
@@ -115,7 +91,7 @@ void Counter_Clockwise(uint32_t rotary_id);
 void StartDefaultTask(void const * argument);
 void StartBlinkTask(void const * argument);
 
-extern void MX_USB_DEVICE_Init(void);
+//extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -174,7 +150,8 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
+  //MX_USB_DEVICE_Init();
+	Composite_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
   Init_Rotary(
@@ -224,18 +201,18 @@ void StartDefaultTask(void const * argument)
 	mediaHID.keys = 0;
 
 	mediaHID.keys = USB_HID_VOL_UP;
-	USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(struct mediaHID_t));
+	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(struct mediaHID_t));
 	HAL_Delay(30);
 	mediaHID.keys = 0;
-	USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(struct mediaHID_t));
+	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(struct mediaHID_t));
 	HAL_Delay(500);
 	keyboardHID.modifiers = USB_HID_MODIFIER_RIGHT_SHIFT;
 	keyboardHID.key1 = USB_HID_KEY_L;
-	USBD_HID_SendReport(&hUsbDeviceFS, &keyboardHID, sizeof(struct keyboardHID_t));
+	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(struct keyboardHID_t));
 	HAL_Delay(30);
 	keyboardHID.modifiers = 0;
 	keyboardHID.key1 = 0;
-	USBD_HID_SendReport(&hUsbDeviceFS, &keyboardHID, sizeof(struct keyboardHID_t));
+	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(struct keyboardHID_t));
 	HAL_Delay(30);
 
 	RotaryMail *rptr;
@@ -306,6 +283,26 @@ void StartBlinkTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void Composite_USB_DEVICE_Init(void)
+{
+  if (USBD_Init(&hUsbDeviceFS, &FS_Desc_Composite, DEVICE_FS) != USBD_OK)
+  {
+    Error_Handler();
+  }
+  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_Composite) != USBD_OK)
+  {
+    Error_Handler();
+  }
+  if (USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS) != USBD_OK)
+  {
+    Error_Handler();
+  }
+  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
+	{
+		Error_Handler();
+	}
+}
+
 void DisableTimer()
 {
   __HAL_TIM_DISABLE(&htim2);
