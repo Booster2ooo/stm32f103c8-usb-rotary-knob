@@ -3,7 +3,7 @@ This project is meant to be a USB knob capable of sending user-defined keyboard 
 
 This is my first baremetal (and C) project. I choose to work with the STM32F103C8T6 because, even if it's a bit outdate, it's still a very powerfull device at low cost.
 
-Special thanks to sabu (sabu@serveur.io) for his guidance, patience and help, this project wouldn't exist without him.
+Special thanks to sabu (email: sabu (at) serveur (dot) io) for his guidance, patience and help, this project wouldn't exist without him.
 
 
 # Project roadmap
