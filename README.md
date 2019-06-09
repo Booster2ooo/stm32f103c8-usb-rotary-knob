@@ -21,7 +21,7 @@ To avoid blocking the main thread, I decided to use the FreeRTOS capabilities of
 
 The default task awaits for mails sent from the rotary encoder and behave accordingly.
 
-## [ ] Composite USB: VCP + HID
+## [x] Composite USB: VCP + HID
 CubeMX allows to easilly configure the device to USB Virtual Com Port mode but this is not enought.
 
 The device should be recognized as both a VCP and an HID (keyboard) so it could send keys combination and be programmed using COM.
