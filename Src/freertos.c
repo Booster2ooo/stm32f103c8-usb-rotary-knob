@@ -28,10 +28,7 @@
 /* USER CODE BEGIN Includes */     
 #include "tim.h"
 #include "rotary.h"
-#include "usbd_hid.h"
-#include "usbd_desc.h"
-#include "usbd_composite.h"
-#include "usb_descriptors.h"
+#include "usbd_hid_cdc.h"
 #include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
@@ -77,9 +74,24 @@ osMailQId rotaryMailQ;
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
 
+// HID Keyboard report
+typedef struct {
+		uint8_t id;
+		uint8_t modifiers;
+		uint8_t key1;
+		uint8_t key2;
+		uint8_t key3;
+} keyboardHID_t;
+keyboardHID_t keyboardHID = {0};
+// HID Media report
+typedef struct {
+	uint8_t id;
+	uint8_t keys;
+} mediaHID_t;
+mediaHID_t mediaHID = {0};
+
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void Composite_USB_DEVICE_Init(void);
 void DisableTimer();
 void Blink();
 void Switch_Rising(uint32_t rotary_id);
@@ -91,7 +103,7 @@ void Counter_Clockwise(uint32_t rotary_id);
 void StartDefaultTask(void const * argument);
 void StartBlinkTask(void const * argument);
 
-//extern void MX_USB_DEVICE_Init(void);
+extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -149,13 +161,26 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for USB_DEVICE */
-  //MX_USB_DEVICE_Init();
-	Composite_USB_DEVICE_Init();
+	if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)==CoreDebug_DHCSR_C_DEBUGEN_Msk) {
+		/* init code for USB_DEVICE */
+		GPIO_InitTypeDef GPIO_InitStruct;
+		GPIO_InitStruct.Pin = GPIO_PIN_12;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	//reenumerate
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+		HAL_Delay(500);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+		HAL_Delay(500);
+	}
+
+  MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
   Init_Rotary(
-		&rotary1,
+    &rotary1, 
 		ROTARYID1,
 		RCLK_GPIO_Port,
 		RCLK_Pin,
@@ -177,43 +202,9 @@ void StartDefaultTask(void const * argument)
   HAL_TIM_Base_Start_IT(&htim2);
   DisableTimer();
 
-  // HID Keyboard
-	struct keyboardHID_t {
-			uint8_t id;
-			uint8_t modifiers;
-			uint8_t key1;
-			uint8_t key2;
-			uint8_t key3;
-	};
-	struct keyboardHID_t keyboardHID = {0};
-	keyboardHID.id = 1;
-	keyboardHID.modifiers = 0;
-	keyboardHID.key1 = 0;
-	keyboardHID.key2 = 0;
-	keyboardHID.key3 = 0;
-	// HID Media
-	struct mediaHID_t {
-		uint8_t id;
-		uint8_t keys;
-	};
-	struct mediaHID_t mediaHID = {0};
-	mediaHID.id = 2;
-	mediaHID.keys = 0;
-
-	mediaHID.keys = USB_HID_VOL_UP;
-	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(struct mediaHID_t));
-	HAL_Delay(30);
-	mediaHID.keys = 0;
-	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(struct mediaHID_t));
-	HAL_Delay(500);
-	keyboardHID.modifiers = USB_HID_MODIFIER_RIGHT_SHIFT;
-	keyboardHID.key1 = USB_HID_KEY_L;
-	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(struct keyboardHID_t));
-	HAL_Delay(30);
-	keyboardHID.modifiers = 0;
-	keyboardHID.key1 = 0;
-	USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(struct keyboardHID_t));
-	HAL_Delay(30);
+  // Define report ids
+  keyboardHID.id = 1;
+  mediaHID.id = 2;
 
 	RotaryMail *rptr;
 	osEvent event;
@@ -283,26 +274,6 @@ void StartBlinkTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void Composite_USB_DEVICE_Init(void)
-{
-  if (USBD_Init(&hUsbDeviceFS, &FS_Desc_Composite, DEVICE_FS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_Composite) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
-	{
-		Error_Handler();
-	}
-}
-
 void DisableTimer()
 {
   __HAL_TIM_DISABLE(&htim2);
@@ -330,11 +301,22 @@ void Switch_Falling(uint32_t rotary_id)
 void Clockwise(uint32_t rotary_id)
 {
   printf("[%ld] Clockwise\r\n", rotary_id / 0x10);
+	keyboardHID.key1 = USB_HID_KEY_L;
+  mediaHID.keys = USB_HID_VOL_UP;
+  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
+  HAL_Delay(30);
+  mediaHID.keys = 0;
+  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
 }
 
 void Counter_Clockwise(uint32_t rotary_id)
 {
   printf("[%ld] Counter-Clockwise\r\n", rotary_id / 0x10);
+  mediaHID.keys = USB_HID_VOL_DEC;
+  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
+  HAL_Delay(30);
+  mediaHID.keys = 0;
+  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
 }
 /* USER CODE END Application */
 

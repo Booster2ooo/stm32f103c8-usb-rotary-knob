@@ -28,8 +28,8 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_cdc.h"
-
+//#include "usbd_cdc.h"
+#include "usbd_hid_cdc.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */

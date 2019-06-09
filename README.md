@@ -3,7 +3,7 @@ This project is meant to be a USB knob capable of sending user-defined keyboard 
 
 This is my first baremetal (and C) project. I choose to work with the STM32F103C8T6 because, even if it's a bit outdate, it's still a very powerfull device at low cost.
 
-Special thanks to sabu for his guidance, patience and help, this project wouldn't exist without him.
+Special thanks to sabu (sabu@serveur.io) for his guidance, patience and help, this project wouldn't exist without him.
 
 
 # Project roadmap
@@ -28,3 +28,11 @@ The device should be recognized as both a VCP and an HID (keyboard) so it could 
 
 ## [ ] Programming key combos
 The VCP interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
+
+# Links
+Here are a few link to projects and articles that helped me during the process (aside from ST manuals):
+
+- https://satoshinm.github.io/blog/171227_stm32hid_pill_duck_scriptable_usb_hid_device_using_an_stm32_blue_pill_from_mouse_jigglers_to_rubber_duckies.html
+- https://gitlab.com/piotrva/stm32-composite-hid-cdc
+- https://github.com/robotsrulz/STM32-COMPOSITE
+- https://habr.com/ru/post/335018/ (translated to EN thanks to G Translate)

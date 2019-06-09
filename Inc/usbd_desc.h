@@ -108,7 +108,7 @@
 extern USBD_DescriptorsTypeDef FS_Desc;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-extern USBD_DescriptorsTypeDef FS_Desc_Composite;
+
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**

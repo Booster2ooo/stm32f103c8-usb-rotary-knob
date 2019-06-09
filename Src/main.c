@@ -30,10 +30,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include "usbd_hid.h"
-#include "usbd_desc.h"
-#include "usbd_composite.h"
-#include "usb_descriptors.h"
+#include "usbd_hid_cdc.h"
 #include "usbd_cdc_if.h"
 #include "rotary.h"
 /* USER CODE END Includes */
@@ -64,6 +61,7 @@ void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
+void utx(uint8_t *buf, uint32_t length);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -114,10 +112,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  // USB Composite configuration ...?
-  USBD_Composite_Set_Descriptor(COMPOSITE_CDC_HID_DESCRIPTOR, COMPOSITE_CDC_HID_DESCRIPTOR_SIZE);
-  USBD_Composite_Set_Classes(&USBD_CDC, &USBD_HID);
-  in_endpoint_to_class[HID_EPIN_ADDR & 0x7F] = 1;
+
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -197,6 +192,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
     Compute_Rotary(&rotary1);
     Compute_Rotary(&rotary2);
   }
+}
+
+void utx(uint8_t *buf, uint32_t length) {
+  //CDC_Transmit_FS((uint8_t *)buf, length);
 }
 /* USER CODE END 4 */
 
