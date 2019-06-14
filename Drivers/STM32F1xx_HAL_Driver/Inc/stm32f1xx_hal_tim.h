@@ -82,7 +82,7 @@ typedef struct
                                         - the number of half PWM period in center-aligned mode
                                      This parameter must be a number between Min_Data = 0x00 and Max_Data = 0xFF.
                                      @note This parameter is valid only for TIM1 and TIM8. */
-									 
+                   
   uint32_t AutoReloadPreload;  /*!< Specifies the auto-reload preload.
                                     This parameter can be a value of @ref TIM_AutoReloadPreload */
 } TIM_Base_InitTypeDef;
@@ -583,16 +583,16 @@ typedef struct
 /** @defgroup TIM_Clock_Source TIM Clock Source
   * @{
   */
-#define	TIM_CLOCKSOURCE_ETRMODE2    (TIM_SMCR_ETPS_1)
-#define	TIM_CLOCKSOURCE_INTERNAL    (TIM_SMCR_ETPS_0)
-#define	TIM_CLOCKSOURCE_ITR0        ((uint32_t)0x0000)
-#define	TIM_CLOCKSOURCE_ITR1        (TIM_SMCR_TS_0)
-#define	TIM_CLOCKSOURCE_ITR2        (TIM_SMCR_TS_1)
-#define	TIM_CLOCKSOURCE_ITR3        (TIM_SMCR_TS_0 | TIM_SMCR_TS_1)
-#define	TIM_CLOCKSOURCE_TI1ED       (TIM_SMCR_TS_2)
-#define	TIM_CLOCKSOURCE_TI1         (TIM_SMCR_TS_0 | TIM_SMCR_TS_2)
-#define	TIM_CLOCKSOURCE_TI2         (TIM_SMCR_TS_1 | TIM_SMCR_TS_2)
-#define	TIM_CLOCKSOURCE_ETRMODE1    (TIM_SMCR_TS)
+#define  TIM_CLOCKSOURCE_ETRMODE2    (TIM_SMCR_ETPS_1)
+#define  TIM_CLOCKSOURCE_INTERNAL    (TIM_SMCR_ETPS_0)
+#define  TIM_CLOCKSOURCE_ITR0        ((uint32_t)0x0000)
+#define  TIM_CLOCKSOURCE_ITR1        (TIM_SMCR_TS_0)
+#define  TIM_CLOCKSOURCE_ITR2        (TIM_SMCR_TS_1)
+#define  TIM_CLOCKSOURCE_ITR3        (TIM_SMCR_TS_0 | TIM_SMCR_TS_1)
+#define  TIM_CLOCKSOURCE_TI1ED       (TIM_SMCR_TS_2)
+#define  TIM_CLOCKSOURCE_TI1         (TIM_SMCR_TS_0 | TIM_SMCR_TS_2)
+#define  TIM_CLOCKSOURCE_TI2         (TIM_SMCR_TS_1 | TIM_SMCR_TS_2)
+#define  TIM_CLOCKSOURCE_ETRMODE1    (TIM_SMCR_TS)
 /**
   * @}
   */
@@ -661,7 +661,7 @@ typedef struct
 /** @defgroup TIM_OSSI_Off_State_Selection_for_Idle_mode_state TIM OSSI Off State Selection for Idle mode state
   * @{
   */
-#define TIM_OSSI_ENABLE	       (TIM_BDTR_OSSI)
+#define TIM_OSSI_ENABLE         (TIM_BDTR_OSSI)
 #define TIM_OSSI_DISABLE       0x00000000U
 /**
   * @}
@@ -699,7 +699,7 @@ typedef struct
   * @{
   */
 #define TIM_AUTOMATICOUTPUT_ENABLE           (TIM_BDTR_AOE)
-#define	TIM_AUTOMATICOUTPUT_DISABLE          0x00000000U
+#define  TIM_AUTOMATICOUTPUT_DISABLE          0x00000000U
 /**
   * @}
   */
@@ -707,14 +707,14 @@ typedef struct
 /** @defgroup TIM_Master_Mode_Selection TIM Master Mode Selection
   * @{
   */
-#define	TIM_TRGO_RESET            0x00000000U
-#define	TIM_TRGO_ENABLE           (TIM_CR2_MMS_0)
-#define	TIM_TRGO_UPDATE           (TIM_CR2_MMS_1)
-#define	TIM_TRGO_OC1              ((TIM_CR2_MMS_1 | TIM_CR2_MMS_0))
-#define	TIM_TRGO_OC1REF           (TIM_CR2_MMS_2)
-#define	TIM_TRGO_OC2REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_0))
-#define	TIM_TRGO_OC3REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_1))
-#define	TIM_TRGO_OC4REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_1 | TIM_CR2_MMS_0))
+#define  TIM_TRGO_RESET            0x00000000U
+#define  TIM_TRGO_ENABLE           (TIM_CR2_MMS_0)
+#define  TIM_TRGO_UPDATE           (TIM_CR2_MMS_1)
+#define  TIM_TRGO_OC1              ((TIM_CR2_MMS_1 | TIM_CR2_MMS_0))
+#define  TIM_TRGO_OC1REF           (TIM_CR2_MMS_2)
+#define  TIM_TRGO_OC2REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_0))
+#define  TIM_TRGO_OC3REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_1))
+#define  TIM_TRGO_OC4REF           ((TIM_CR2_MMS_2 | TIM_CR2_MMS_1 | TIM_CR2_MMS_0))
 /**
   * @}
   */

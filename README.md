@@ -26,13 +26,19 @@ CubeMX allows to easilly configure the device to USB Virtual Com Port mode but t
 
 The device should be recognized as both a VCP and an HID (keyboard) so it could send keys combination and be programmed using COM.
 
-## [ ] Programming key combos
+## [x] Programming key combos
 The VCP interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
+
+## [ ] Save/load config to/from flash/eeprom
+Once the rotary is programmed, the flash memory should be written for the configuration to be persistant when the device in unpluged/pluged again.
 
 # Links
 Here are a few link to projects and articles that helped me during the process (aside from ST manuals):
 
 - https://satoshinm.github.io/blog/171227_stm32hid_pill_duck_scriptable_usb_hid_device_using_an_stm32_blue_pill_from_mouse_jigglers_to_rubber_duckies.html
+- https://notes.iopush.net/stm32-custom-usb-hid-step-by-step-2/
 - https://gitlab.com/piotrva/stm32-composite-hid-cdc
 - https://github.com/robotsrulz/STM32-COMPOSITE
 - https://habr.com/ru/post/335018/ (translated to EN thanks to G Translate)
+- https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2
+- https://www.stefanjones.ca/blog/arduino-leonardo-remote-multimedia-keys/

@@ -112,7 +112,6 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -195,7 +194,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
 }
 
 void utx(uint8_t *buf, uint32_t length) {
-  //CDC_Transmit_FS((uint8_t *)buf, length);
+  CDC_Transmit_FS((uint8_t *)buf, length);
 }
 /* USER CODE END 4 */
 
@@ -218,8 +217,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
   if (htim->Instance == htim2.Instance)
   {
-		Debounce_Switch(&rotary1);
-		Debounce_Switch(&rotary2);
+    Debounce_Switch(&rotary1);
+    Debounce_Switch(&rotary2);
   }
   /* USER CODE END Callback 1 */
 }

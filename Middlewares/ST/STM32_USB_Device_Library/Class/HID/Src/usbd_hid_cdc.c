@@ -362,54 +362,6 @@ __ALIGN_BEGIN static uint8_t USBD_HID_CDC_DeviceQualifierDesc[USB_LEN_DEV_QUALIF
   0x00,
 };
 
-__ALIGN_BEGIN static uint8_t USBD_HID_BBOX_ReportDesc[HID_BBOX_REPORT_DESC_SIZE]  __ALIGN_END =
-{
-		0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-		0x09, 0x05,                    // USAGE (Game Pad)
-		0xa1, 0x01,                    // COLLECTION (Application)
-		0x85, 0x01,                    //   REPORT_ID (1)
-		0x05, 0x09,                    //   USAGE_PAGE (Button)
-		0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
-		0x29, 0x0f,                    //   USAGE_MAXIMUM (Button 15)
-		0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-		0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
-		0x75, 0x01,                    //   REPORT_SIZE (1)
-		0x95, 0x0f,                    //   REPORT_COUNT (15)
-		0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-		0x95, 0x01,                    //   REPORT_COUNT (1)
-		0x75, 0x01,                    //   REPORT_SIZE (1)
-		0x81, 0x01,                    //   INPUT (Cnst,Ary,Abs)
-		0xa1, 0x00,                    //   COLLECTION (Physical)
-		0x09, 0x90,                    //     USAGE (D-Pad Up)
-		0x09, 0x91,                    //     USAGE (D-Pad Down)
-		0x09, 0x93,                    //     USAGE (D-Pad Left)
-		0x09, 0x92,                    //     USAGE (D-Pad Right)
-		0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
-		0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
-		0x35, 0x00,                    //     PHYSICAL_MINIMUM (0)
-		0x45, 0x01,                    //     PHYSICAL_MAXIMUM (1)
-		0x75, 0x01,                    //     REPORT_SIZE (1)
-		0x95, 0x04,                    //     REPORT_COUNT (4)
-		0x81, 0x02,                    //     INPUT (Data,Var,Abs)
-		0xc0,                          //   END_COLLECTION
-		0x95, 0x01,                    //   REPORT_COUNT (1)
-		0x75, 0x04,                    //   REPORT_SIZE (4)
-		0x81, 0x01,                    //   INPUT (Cnst,Ary,Abs)
-		0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop) + 24 bytes
-		0x09, 0x01,                    //   USAGE (Pointer)
-		0xa1, 0x00,                    //   COLLECTION (Physical)
-		0x09, 0x33,                    //     USAGE (RX)
-		0x09, 0x34,                    //     USAGE (RY)
-		0x09, 0x35,                    //     USAGE (RZ)
-		0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
-		0x26, 0xff, 0x0f,              //     LOGICAL_MAXIMUM (4095)
-		0x75, 0x10,                    //     REPORT_SIZE (16)
-		0x95, 0x03,                    //     REPORT_COUNT (3)
-		0x81, 0x02,                    //     INPUT (Data,Var,Abs)
-		0xc0,                          //   END_COLLECTION
-		0xc0                           // END_COLLECTION
-}; 
-
 __ALIGN_BEGIN static uint8_t HID_CUSTOM_ReportDesc[HID_CUSTOM_REPORT_DESC_SIZE]  __ALIGN_END = {
   // 78 bytes
   0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
@@ -430,7 +382,8 @@ __ALIGN_BEGIN static uint8_t HID_CUSTOM_ReportDesc[HID_CUSTOM_REPORT_DESC_SIZE] 
   0x25, 0x64,        //   Logical Maximum (100)
   0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
   0x19, 0x00,        //   Usage Minimum (0x00)
-  0x29, 0x65,        //   Usage Maximum (0x65)
+//  0x29, 0x65,        //   Usage Maximum (0x65)
+  0x29, 0xe7,        //   Usage Maximum (0xe7)
   0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
   0xC0,              // End Collection
   0x05, 0x0C,        // Usage Page (Consumer)
@@ -526,15 +479,15 @@ static uint8_t  USBD_HID_CDC_Init (USBD_HandleTypeDef *pdev,
 
     /* Prepare Out endpoint to receive next packet */
     USBD_LL_PrepareReceive(pdev,
-    		CDC_EP1OUT_ADDR,
-    		((USBD_HID_CDC_HandleTypeDef *)pdev->pClassData)->CDCRxBuffer,
+        CDC_EP1OUT_ADDR,
+        ((USBD_HID_CDC_HandleTypeDef *)pdev->pClassData)->CDCRxBuffer,
             CDC_EP1OUT_SIZE);
 
     /*USBD_LL_PrepareReceive(pdev,
-    		HID_EP1OUT_ADDR,
-        	((USBD_HID_CDC_HandleTypeDef *)pdev->pClassData)->HIDRxBuffer,
+        HID_EP1OUT_ADDR,
+          ((USBD_HID_CDC_HandleTypeDef *)pdev->pClassData)->HIDRxBuffer,
             HID_EP1OUT_SIZE);
-	 */
+   */
   }
 
   return ret;
@@ -562,7 +515,7 @@ static uint8_t  USBD_HID_CDC_DeInit (USBD_HandleTypeDef *pdev,
   /* FRee allocated memory */
   if(pdev->pClassData != NULL)
   {
-	((USBD_CDC_ItfTypeDef *)pdev->pUserData)->DeInit();
+  ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->DeInit();
     USBD_free(pdev->pClassData);
     pdev->pClassData = NULL;
   } 
@@ -586,19 +539,19 @@ static uint8_t  USBD_HID_CDC_Setup (USBD_HandleTypeDef *pdev,
   USBD_HID_CDC_HandleTypeDef     *hhid = (USBD_HID_CDC_HandleTypeDef*) pdev->pClassData;
   
 
-  if (req) {
-	  uint8_t dbg[255];
+  /*if (req) {
+    uint8_t dbg[255];
 
-	  uint8_t ll = sprintf(dbg,
-			  "\r\nreq->bmRequest=0x%x\r\nreq->bRequest=0x%x\r\nreq->wValue=0x%x\r\nreq->wIndex=0x%x\r\nreq->wLength=0x%x\r\n",
-			  req->bmRequest,
-			  req->bRequest,
-			  req->wValue,
-			  req->wIndex,
-			  req->wLength
-			  );
-	  utx (dbg, ll);
-  }
+    uint8_t ll = sprintf(dbg,
+        "\r\nreq->bmRequest=0x%x\r\nreq->bRequest=0x%x\r\nreq->wValue=0x%x\r\nreq->wIndex=0x%x\r\nreq->wLength=0x%x\r\n",
+        req->bmRequest,
+        req->bRequest,
+        req->wValue,
+        req->wIndex,
+        req->wLength
+        );
+    utx (dbg, ll);
+  }*/
 
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
@@ -606,34 +559,34 @@ static uint8_t  USBD_HID_CDC_Setup (USBD_HandleTypeDef *pdev,
 
   case USB_REQ_TYPE_CLASS :
       if ((((req->bmRequest & 0x0f) == 1) && (req->wIndex == 2)) ||
-    	   (((req->bmRequest & 0x0f) == 2) && ((req->wIndex == HID_EP0IN_ADDR)))) {
+         (((req->bmRequest & 0x0f) == 2) && ((req->wIndex == HID_EP0IN_ADDR)))) {
 
-		switch (req->bRequest)
-		{
-		case HID_REQ_SET_PROTOCOL:
-		  hhid->Protocol = (uint8_t)(req->wValue);
-		  break;
+    switch (req->bRequest)
+    {
+    case HID_REQ_SET_PROTOCOL:
+      hhid->Protocol = (uint8_t)(req->wValue);
+      break;
 
-		case HID_REQ_GET_PROTOCOL:
-		  USBD_CtlSendData (pdev,
-							(uint8_t *)&hhid->Protocol,
-							1);
-		  break;
+    case HID_REQ_GET_PROTOCOL:
+      USBD_CtlSendData (pdev,
+              (uint8_t *)&hhid->Protocol,
+              1);
+      break;
 
-		case HID_REQ_SET_IDLE:
-		  hhid->IdleState = (uint8_t)(req->wValue >> 8);
-		  break;
+    case HID_REQ_SET_IDLE:
+      hhid->IdleState = (uint8_t)(req->wValue >> 8);
+      break;
 
-		case HID_REQ_GET_IDLE:
-		  USBD_CtlSendData (pdev,
-							(uint8_t *)&hhid->IdleState,
-							1);
-		  break;
+    case HID_REQ_GET_IDLE:
+      USBD_CtlSendData (pdev,
+              (uint8_t *)&hhid->IdleState,
+              1);
+      break;
 
-		default:
-		  USBD_CtlError (pdev, req);
-		  return USBD_FAIL;
-		}
+    default:
+      USBD_CtlError (pdev, req);
+      return USBD_FAIL;
+    }
     } else if (req->wLength)
     {
       if (req->bmRequest & 0x80)
@@ -680,14 +633,14 @@ static uint8_t  USBD_HID_CDC_Setup (USBD_HandleTypeDef *pdev,
       }
       
 //      {
-//      	  uint8_t dbg[512];
-//      	  uint16_t ll = 0;
+//          uint8_t dbg[512];
+//          uint16_t ll = 0;
 //
-//      	  for (int i=0; i<len; i++)
-//      		  ll += sprintf(&dbg[ll], " %02x", pbuf[i]);
+//          for (int i=0; i<len; i++)
+//            ll += sprintf(&dbg[ll], " %02x", pbuf[i]);
 //
-//      	  ll += sprintf(&dbg[ll], "\r\n");
-//      	  utx (dbg, ll);
+//          ll += sprintf(&dbg[ll], "\r\n");
+//          utx (dbg, ll);
 //        }
 
       USBD_CtlSendData (pdev, 
@@ -697,23 +650,23 @@ static uint8_t  USBD_HID_CDC_Setup (USBD_HandleTypeDef *pdev,
       break;
       
     case USB_REQ_GET_INTERFACE :
-    	if ((uint8_t)(req->wValue) == HID_EP0IN_ADDR)
-    	{
-    		USBD_CtlSendData (pdev,
+      if ((uint8_t)(req->wValue) == HID_EP0IN_ADDR)
+      {
+        USBD_CtlSendData (pdev,
                         (uint8_t *)&hhid->HIDAltSetting, 1);
-    	} else {
-    		USBD_CtlSendData (pdev,
-    		            (uint8_t *)&hhid->CDCAltSetting, 1);
-		}
+      } else {
+        USBD_CtlSendData (pdev,
+                    (uint8_t *)&hhid->CDCAltSetting, 1);
+    }
       break;
       
     case USB_REQ_SET_INTERFACE :
-    	if ((uint8_t)(req->wValue) == HID_EP0IN_ADDR)
-    	{
-    		hhid->HIDAltSetting = (uint8_t)(req->wValue);
-    	} else {
-    		hhid->CDCAltSetting = (uint8_t)(req->wValue);
-		}
+      if ((uint8_t)(req->wValue) == HID_EP0IN_ADDR)
+      {
+        hhid->HIDAltSetting = (uint8_t)(req->wValue);
+      } else {
+        hhid->CDCAltSetting = (uint8_t)(req->wValue);
+    }
       break;
     }
   }
@@ -807,14 +760,14 @@ static uint8_t  USBD_HID_CDC_DataIn (USBD_HandleTypeDef *pdev,
   be caused by  a new transfer before the end of the previous transfer */
   if (h != NULL) {
 
-	epnum |= 0x80;
-	if (epnum == HID_EP0IN_ADDR) {
-		h->state = HID_IDLE;
-	} else {
-		h->CDCTxState = 0;
-	}
+  epnum |= 0x80;
+  if (epnum == HID_EP0IN_ADDR) {
+    h->state = HID_IDLE;
+  } else {
+    h->CDCTxState = 0;
+  }
 
-	return USBD_OK;
+  return USBD_OK;
   }
 
   return USBD_FAIL;
@@ -829,27 +782,27 @@ static uint8_t  USBD_HID_CDC_DataIn (USBD_HandleTypeDef *pdev,
   */
 
 static uint8_t  USBD_HID_CDC_DataOut (USBD_HandleTypeDef *pdev,
-								uint8_t epnum)
+                uint8_t epnum)
 {
-	USBD_HID_CDC_HandleTypeDef *h = (USBD_HID_CDC_HandleTypeDef *)pdev->pClassData;
+  USBD_HID_CDC_HandleTypeDef *h = (USBD_HID_CDC_HandleTypeDef *)pdev->pClassData;
 
     /* USB data will be immediately processed, this allow next USB traffic being
-	NAKed till the end of the application Xfer */
-	if(h != NULL && epnum != HID_EP1OUT_ADDR)
-	{
-		h->CDCRxLength = USBD_LL_GetRxDataSize (pdev, epnum);
-	    ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Receive(h->CDCRxBuffer, &h->CDCRxLength);
-	    USBD_LL_PrepareReceive(pdev, CDC_EP1OUT_ADDR, h->CDCRxBuffer, CDC_EP1OUT_SIZE);
+  NAKed till the end of the application Xfer */
+  if(h != NULL && epnum != HID_EP1OUT_ADDR)
+  {
+    h->CDCRxLength = USBD_LL_GetRxDataSize (pdev, epnum);
+      ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->Receive(h->CDCRxBuffer, &h->CDCRxLength);
+      USBD_LL_PrepareReceive(pdev, CDC_EP1OUT_ADDR, h->CDCRxBuffer, CDC_EP1OUT_SIZE);
 
-	    return USBD_OK;
-	}
-	// else
-	// {
-	// 	h->HIDRxLength = USBD_LL_GetRxDataSize (pdev, epnum);
-	//     USBD_LL_PrepareReceive(pdev, HID_EP1OUT_ADDR, h->HIDRxBuffer, HID_EP1OUT_SIZE);
+      return USBD_OK;
+  }
+  // else
+  // {
+  //   h->HIDRxLength = USBD_LL_GetRxDataSize (pdev, epnum);
+  //     USBD_LL_PrepareReceive(pdev, HID_EP1OUT_ADDR, h->HIDRxBuffer, HID_EP1OUT_SIZE);
 
-	//     return USBD_OK;
-	// }
+  //     return USBD_OK;
+  // }
 
     return USBD_FAIL;
 }

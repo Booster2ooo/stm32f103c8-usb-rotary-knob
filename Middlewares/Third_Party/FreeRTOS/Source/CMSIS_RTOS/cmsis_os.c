@@ -26,7 +26,7 @@
  *  
  *----------------------------------------------------------------------------
  *
- * Portions Copyright © 2016 STMicroelectronics International N.V. All rights reserved.
+ * Portions Copyright ï¿½ 2016 STMicroelectronics International N.V. All rights reserved.
  * Portions Copyright (c) 2013 ARM LIMITED
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -213,8 +213,8 @@ int32_t osKernelRunning(void)
   else
     return 1;
 #else
-	return (-1);
-#endif	
+  return (-1);
+#endif  
 }
 
 #if (defined (osFeature_SysTick)  &&  (osFeature_SysTick != 0))     // System Timer available
@@ -285,7 +285,7 @@ osThreadId osThreadGetId (void)
 #if ( ( INCLUDE_xTaskGetCurrentTaskHandle == 1 ) || ( configUSE_MUTEXES == 1 ) )
   return xTaskGetCurrentTaskHandle();
 #else
-	return NULL;
+  return NULL;
 #endif
 }
 
@@ -433,7 +433,7 @@ osTimerId osTimerCreate (const osTimerDef_t *timer_def, os_timer_type type, void
 #endif
 
 #else 
-	return NULL;
+  return NULL;
 #endif
 }
 
@@ -544,7 +544,7 @@ osStatus result = osOK;
 */
 int32_t osSignalSet (osThreadId thread_id, int32_t signal)
 {
-#if( configUSE_TASK_NOTIFICATIONS == 1 )	
+#if( configUSE_TASK_NOTIFICATIONS == 1 )  
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   uint32_t ulPreviousNotificationValue = 0;
   
@@ -563,7 +563,7 @@ int32_t osSignalSet (osThreadId thread_id, int32_t signal)
   (void) thread_id;
   (void) signal;
 
-  return 0x80000000; /* Task Notification not supported */ 	
+  return 0x80000000; /* Task Notification not supported */   
 #endif
 }
 
@@ -588,7 +588,7 @@ osEvent osSignalWait (int32_t signals, uint32_t millisec)
   osEvent ret;
 
 #if( configUSE_TASK_NOTIFICATIONS == 1 )
-	
+  
   TickType_t ticks;
 
   ret.value.signals = 0;  
@@ -623,8 +623,8 @@ osEvent osSignalWait (int32_t signals, uint32_t millisec)
 #else
   (void) signals;
   (void) millisec;
-	
-  ret.status =  osErrorOS;	/* Task Notification not supported */
+  
+  ret.status =  osErrorOS;  /* Task Notification not supported */
 #endif
   
   return ret;
@@ -691,7 +691,7 @@ osStatus osMutexWait (osMutexId mutex_id, uint32_t millisec)
     if (xSemaphoreTakeFromISR(mutex_id, &taskWoken) != pdTRUE) {
       return osErrorOS;
     }
-	portEND_SWITCHING_ISR(taskWoken);
+  portEND_SWITCHING_ISR(taskWoken);
   } 
   else if (xSemaphoreTake(mutex_id, ticks) != pdTRUE) {
     return osErrorOS;
@@ -776,7 +776,7 @@ osSemaphoreId osSemaphoreCreate (const osSemaphoreDef_t *semaphore_def, int32_t 
       return sema;
     }
     else {
-#if (configUSE_COUNTING_SEMAPHORES == 1 )	
+#if (configUSE_COUNTING_SEMAPHORES == 1 )  
       return xSemaphoreCreateCounting(count, count);
 #else
       return NULL;
@@ -803,7 +803,7 @@ osSemaphoreId osSemaphoreCreate (const osSemaphoreDef_t *semaphore_def, int32_t 
     return sema;
   }
   else {
-#if (configUSE_COUNTING_SEMAPHORES == 1 )	
+#if (configUSE_COUNTING_SEMAPHORES == 1 )  
     return xSemaphoreCreateCounting(count, count);
 #else
     return NULL;
@@ -844,7 +844,7 @@ int32_t osSemaphoreWait (osSemaphoreId semaphore_id, uint32_t millisec)
     if (xSemaphoreTakeFromISR(semaphore_id, &taskWoken) != pdTRUE) {
       return osErrorOS;
     }
-	portEND_SWITCHING_ISR(taskWoken);
+  portEND_SWITCHING_ISR(taskWoken);
   }  
   else if (xSemaphoreTake(semaphore_id, ticks) != pdTRUE) {
     return osErrorOS;
@@ -1699,7 +1699,7 @@ osMutexId osRecursiveMutexCreate (const osMutexDef_t *mutex_def)
 #endif
 #else
   return NULL;
-#endif	
+#endif  
 }
 
 /**
@@ -1718,7 +1718,7 @@ osStatus osRecursiveMutexRelease (osMutexId mutex_id)
   }
   return result;
 #else
-	return osErrorResource;
+  return osErrorResource;
 #endif
 }
 
@@ -1758,7 +1758,7 @@ osStatus osRecursiveMutexWait (osMutexId mutex_id, uint32_t millisec)
   }
   return osOK;
 #else
-	return osErrorResource;
+  return osErrorResource;
 #endif
 }
 

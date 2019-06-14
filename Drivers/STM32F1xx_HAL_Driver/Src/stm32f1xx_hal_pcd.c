@@ -1286,7 +1286,7 @@ static HAL_StatusTypeDef PCD_EP_ISR_Handler(PCD_HandleTypeDef *hpcd)
     else
     {
       /* Decode and service non control endpoints interrupt  */
-	  
+    
       /* process related endpoint register */
       wEPVal = PCD_GET_ENDPOINT(hpcd->Instance, epindex);
       if ((wEPVal & USB_EP_CTR_RX) != 0U)

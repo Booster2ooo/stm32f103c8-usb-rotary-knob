@@ -50,17 +50,17 @@
   * @{
   */ 
 
-#define CDC_EPCMD_ADDR				   0x81
-#define CDC_EP0IN_ADDR                 0x82	/* data IN  */
+#define CDC_EPCMD_ADDR           0x81
+#define CDC_EP0IN_ADDR                 0x82  /* data IN  */
 #define HID_EP0IN_ADDR                 0x83
 
-#define CDC_EP1OUT_ADDR				   0x01 /* data OUT */
+#define CDC_EP1OUT_ADDR           0x01 /* data OUT */
 #define HID_EP1OUT_ADDR                0x02
 
 #define HID_EP0IN_SIZE                 0x0a
 #define HID_EP1OUT_SIZE                0x40
 
-#define VCOM_DATA_SIZE	   			   USB_FS_MAX_PACKET_SIZE
+#define VCOM_DATA_SIZE              USB_FS_MAX_PACKET_SIZE
 #define CDC_EP0IN_SIZE                 VCOM_DATA_SIZE
 #define CDC_EP1OUT_SIZE                VCOM_DATA_SIZE
 
@@ -138,7 +138,7 @@ typedef struct
   __IO uint32_t        HIDRxState;
 
   /* CDC fields */
-  uint32_t			   CDCAltSetting;
+  uint32_t         CDCAltSetting;
   uint32_t             CDCdata[VCOM_DATA_SIZE/4];      /* Force 32bits alignment */
   uint8_t              CDCCmdOpCode;
   uint8_t              CDCCmdLength;

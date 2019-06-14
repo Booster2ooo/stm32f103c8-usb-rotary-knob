@@ -33,7 +33,7 @@ void Debounce_Switch(RotaryEncoderTypeDef *rotary)
   {
     rotary->SwStableState = rotary->FilterOutput > 0.95 ? GPIO_PIN_SET : GPIO_PIN_RESET;
     rotary->FilterOutput = (float)rotary->SwStableState;
-    Send_Mail(rotary, rotary->SwStableState ? ebPRESSED : ebRELEASED);
+    Send_Rotary_Mail(rotary, rotary->SwStableState ? ebPRESSED : ebRELEASED);
   }
 }
 
@@ -55,13 +55,13 @@ int8_t Read_Rotary(RotaryEncoderTypeDef *rotary)
     rotary->RotaryStateStore <<= 4;
     rotary->RotaryStateStore |= rotary->RotaryState;
     if ((rotary->RotaryStateStore & 0xff) == 0x2b) 
-	  {
-	    return 1;
-	  }
+    {
+      return 1;
+    }
     if ((rotary->RotaryStateStore & 0xff) == 0x17)
-	  {
-	    return -1;
-	  }
+    {
+      return -1;
+    }
   }
   return 0;
 }
@@ -71,33 +71,33 @@ void Compute_Rotary(RotaryEncoderTypeDef *rotary)
   if(Read_Rotary(rotary))
   {
     if (rotary->RotaryState == 0x0b) 
-	  {
-      Send_Mail(rotary, ebCLOCKWISE);
+    {
+      Send_Rotary_Mail(rotary, ebCLOCKWISE);
     }
     if (rotary->RotaryState == 0x07) 
-	  {
-      Send_Mail(rotary, ebCOUNTERCLOCKWISE);
+    {
+      Send_Rotary_Mail(rotary, ebCOUNTERCLOCKWISE);
     }
   }
 }
 
-void Send_Mail(RotaryEncoderTypeDef *rotary, uint16_t EventCode)
+void Send_Rotary_Mail(RotaryEncoderTypeDef *rotary, uint16_t EventCode)
 {
   RotaryMail *mptr;
   mptr = osMailAlloc(rotaryMailQ, osWaitForever);
   if (mptr == NULL)
   {
-  	Error_Handler();
-  	return;
+    Error_Handler();
+    return;
   }
   mptr->Rotary = rotary;
   mptr->EventCode = EventCode;
   if(osMailPut(rotaryMailQ, mptr) != osOK)
   {
-  	Error_Handler();
+    Error_Handler();
   }
   if(osThreadYield() != osOK)
   {
-  	Error_Handler();
+    Error_Handler();
   }
 }

@@ -27,9 +27,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "tim.h"
-#include "rotary.h"
 #include "usbd_hid_cdc.h"
 #include "usbd_cdc_if.h"
+#include "command_handler.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,26 +39,6 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-// USB media codes
-#define USB_HID_SCAN_NEXT 0x01
-#define USB_HID_SCAN_PREV 0x02
-#define USB_HID_STOP      0x04
-#define USB_HID_EJECT     0x08
-#define USB_HID_PAUSE     0x10
-#define USB_HID_MUTE      0x20
-#define USB_HID_VOL_UP    0x40
-#define USB_HID_VOL_DEC   0x80
-
-// USB keyboard codes
-#define USB_HID_MODIFIER_LEFT_CTRL   0x01
-#define USB_HID_MODIFIER_LEFT_SHIFT  0x02
-#define USB_HID_MODIFIER_LEFT_ALT    0x04
-#define USB_HID_MODIFIER_LEFT_GUI    0x08 // (Win/Apple/Meta)
-#define USB_HID_MODIFIER_RIGHT_CTRL  0x10
-#define USB_HID_MODIFIER_RIGHT_SHIFT 0x20
-#define USB_HID_MODIFIER_RIGHT_ALT   0x40
-#define USB_HID_MODIFIER_RIGHT_GUI   0x80
-#define USB_HID_KEY_L     0x0F
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,25 +50,12 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE BEGIN Variables */
 osMailQDef(rotaryMailQ, 16, RotaryMail);
 osMailQId rotaryMailQ;
+osMailQDef(commandMailQ, 16, CommandMail);
+osMailQId commandMailQ;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId blinkTaskHandle;
-
-// HID Keyboard report
-typedef struct {
-		uint8_t id;
-		uint8_t modifiers;
-		uint8_t key1;
-		uint8_t key2;
-		uint8_t key3;
-} keyboardHID_t;
-keyboardHID_t keyboardHID = {0};
-// HID Media report
-typedef struct {
-	uint8_t id;
-	uint8_t keys;
-} mediaHID_t;
-mediaHID_t mediaHID = {0};
+osThreadId commandTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -98,10 +65,12 @@ void Switch_Rising(uint32_t rotary_id);
 void Switch_Falling(uint32_t rotary_id);
 void Clockwise(uint32_t rotary_id);
 void Counter_Clockwise(uint32_t rotary_id);
+void Act(RotaryActionConfig action_config);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
 void StartBlinkTask(void const * argument);
+void StartCommandHandlerTask(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -130,11 +99,16 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-	rotaryMailQ = osMailCreate(osMailQ(rotaryMailQ), NULL);
-	if (rotaryMailQ == NULL)
-	{
-		Error_Handler();
-	}
+  rotaryMailQ = osMailCreate(osMailQ(rotaryMailQ), NULL);
+  if (rotaryMailQ == NULL)
+  {
+    Error_Handler();
+  }
+  commandMailQ = osMailCreate(osMailQ(commandMailQ), NULL);
+  if (commandMailQ == NULL)
+  {
+    Error_Handler();
+  }
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -145,6 +119,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of blinkTask */
   osThreadDef(blinkTask, StartBlinkTask, osPriorityIdle, 0, 128);
   blinkTaskHandle = osThreadCreate(osThread(blinkTask), NULL);
+
+  /* definition and creation of commandTask */
+  osThreadDef(commandTask, StartCommandHandlerTask, osPriorityIdle, 0, 128);
+  commandTaskHandle = osThreadCreate(osThread(commandTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -161,88 +139,87 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-	if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)==CoreDebug_DHCSR_C_DEBUGEN_Msk) {
-		/* init code for USB_DEVICE */
-		GPIO_InitTypeDef GPIO_InitStruct;
-		GPIO_InitStruct.Pin = GPIO_PIN_12;
-		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	//reenumerate
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-		HAL_Delay(500);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
-		HAL_Delay(500);
-	}
+  /* init code for USB_DEVICE */
+  if ((CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)==CoreDebug_DHCSR_C_DEBUGEN_Msk) {
+    GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  //reenumerate
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+    HAL_Delay(500);
+  }
 
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
   Init_Rotary(
     &rotary1, 
-		ROTARYID1,
-		RCLK_GPIO_Port,
-		RCLK_Pin,
-		RDT_GPIO_Port,
-		RDT_Pin,
-		RSW_GPIO_Port,
-		RSW_Pin
+    ROTARYID1,
+    RCLK_GPIO_Port,
+    RCLK_Pin,
+    RDT_GPIO_Port,
+    RDT_Pin,
+    RSW_GPIO_Port,
+    RSW_Pin
   );
   Init_Rotary(
     &rotary2,
-		ROTARYID2,
-		RCLK2_GPIO_Port,
-		RCLK2_Pin,
-		RDT2_GPIO_Port,
-		RDT2_Pin,
-		RSW2_GPIO_Port,
-		RSW2_Pin
+    ROTARYID2,
+    RCLK2_GPIO_Port,
+    RCLK2_Pin,
+    RDT2_GPIO_Port,
+    RDT2_Pin,
+    RSW2_GPIO_Port,
+    RSW2_Pin
   );
   HAL_TIM_Base_Start_IT(&htim2);
   DisableTimer();
 
-  // Define report ids
-  keyboardHID.id = 1;
-  mediaHID.id = 2;
+  Init_Mediakeyboard();
+  Init_Command_Handler();
 
-	RotaryMail *rptr;
-	osEvent event;
+  RotaryMail *rptr;
+  osEvent event;
   /* Infinite loop */
   for(;;)
   {
-  	event = osMailGet(rotaryMailQ, osWaitForever);
-  	if(event.status == osErrorParameter)
-  	{
-  		Error_Handler();
-  	}
-  	else if (event.status == osEventMail)
-  	{
-  		rptr = event.value.p;
-  		if (rptr->EventCode & ebPRESSED)
-  		{
-  			DisableTimer();
-  			Switch_Rising(rptr->Rotary->Id);
-  			Blink();
-  		}
-  		else if (rptr->EventCode & ebRELEASED)
-  		{
-  			DisableTimer();
-  			Switch_Falling(rptr->Rotary->Id);
-  			Blink();
-  		}
-  		else if (rptr->EventCode & ebCLOCKWISE)
-  		{
-  			Clockwise(rptr->Rotary->Id);
-  			Blink();
-  		}
-  		else if (rptr->EventCode & ebCOUNTERCLOCKWISE)
-  		{
-  			Counter_Clockwise(rptr->Rotary->Id);
-  			Blink();
-  		}
-  		osMailFree(rotaryMailQ, rptr);
-  	}
+    event = osMailGet(rotaryMailQ, osWaitForever);
+    if(event.status == osErrorParameter)
+    {
+      Error_Handler();
+    }
+    else if (event.status == osEventMail)
+    {
+      rptr = event.value.p;
+      if (rptr->EventCode & ebPRESSED)
+      {
+        DisableTimer();
+        Switch_Rising(rptr->Rotary->Id);
+        Blink();
+      }
+      else if (rptr->EventCode & ebRELEASED)
+      {
+        DisableTimer();
+        Switch_Falling(rptr->Rotary->Id);
+        Blink();
+      }
+      else if (rptr->EventCode & ebCLOCKWISE)
+      {
+        Clockwise(rptr->Rotary->Id);
+        Blink();
+      }
+      else if (rptr->EventCode & ebCOUNTERCLOCKWISE)
+      {
+        Counter_Clockwise(rptr->Rotary->Id);
+        Blink();
+      }
+      osMailFree(rotaryMailQ, rptr);
+    }
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -260,16 +237,66 @@ void StartBlinkTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		osEvent event = osSignalWait(0, osWaitForever);
-		if (event.status & 0x80)
-		{
-			Error_Handler();
-		}
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		osDelay(50);
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    osEvent event = osSignalWait(0, osWaitForever);
+    if (event.status & 0x80)
+    {
+      Error_Handler();
+    }
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    osDelay(50);
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   }
   /* USER CODE END StartBlinkTask */
+}
+
+/* USER CODE BEGIN Header_StartCommandHandlerTask */
+/**
+* @brief Function implementing the commandTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCommandHandlerTask */
+void StartCommandHandlerTask(void const * argument)
+{
+  /* USER CODE BEGIN StartCommandHandlerTask */
+  /* Infinite loop */
+  CommandMail *rptr;
+  osEvent event;
+  /* Infinite loop */
+  for(;;)
+  {
+    event = osMailGet(commandMailQ, osWaitForever);
+    if(event.status == osErrorParameter)
+    {
+      Error_Handler();
+    }
+    else if (event.status == osEventMail)
+    {
+      rptr = event.value.p;
+      if (!rptr->EventCode)
+      {
+        printf("\r\n>> [Error] \"%s\" unrecognized.\r\n", rptr->Command);
+      }
+      else if (rptr->EventCode & ebCONNECTED)
+      {
+        printf(">> Hello\r\n");
+      }
+      if (rptr->EventCode & ebWAITING)
+      {
+        utx(rptr->LastBuf, rptr->LastLen);
+      }
+      else if (rptr->EventCode & ebCOMMAND)
+      {
+        printf("\r\n<< %s\r\n", rptr->Command);
+      }
+      else if (rptr->EventCode & ebOVERFLOWN)
+      {
+        printf("\r\n>> [Error] \"%s\" too long.\r\n", rptr->Command);
+      }
+      osMailFree(commandMailQ, rptr);
+    }
+  }
+  /* USER CODE END StartCommandHandlerTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -291,32 +318,41 @@ void Blink()
 void Switch_Rising(uint32_t rotary_id)
 {
   printf("[%ld] Switch released (rising)\r\n", rotary_id / 0x10);
+  Act(rotary_configs[rotary_id / 0x10].Released);
 }
 
 void Switch_Falling(uint32_t rotary_id)
 {
   printf("[%ld] Switch pressed (falling)\r\n", rotary_id /0x10);
+  Act(rotary_configs[rotary_id / 0x10].Pressed);
 }
 
 void Clockwise(uint32_t rotary_id)
 {
   printf("[%ld] Clockwise\r\n", rotary_id / 0x10);
-	keyboardHID.key1 = USB_HID_KEY_L;
-  mediaHID.keys = USB_HID_VOL_UP;
-  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
-  HAL_Delay(30);
-  mediaHID.keys = 0;
-  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
+  Act(rotary_configs[rotary_id / 0x10].Clockwise);
 }
 
 void Counter_Clockwise(uint32_t rotary_id)
 {
   printf("[%ld] Counter-Clockwise\r\n", rotary_id / 0x10);
-  mediaHID.keys = USB_HID_VOL_DEC;
-  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
-  HAL_Delay(30);
-  mediaHID.keys = 0;
-  USBD_HID_SendReport(&hUsbDeviceFS, &mediaHID, sizeof(mediaHID_t));
+  Act(rotary_configs[rotary_id / 0x10].Counterclockwise);
+}
+
+void Act(RotaryActionConfig action_config)
+{
+  if (action_config.Mode == KEYBOARD_MODE)
+  {
+    USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&action_config.Keyboard, sizeof(KeyboardHIDTypeDef));
+    HAL_Delay(30);
+    USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(KeyboardHIDTypeDef));
+  }
+  else if(action_config.Mode == MEDIA_MODE)
+  {
+    USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&action_config.Media, sizeof(MediaHIDTypeDef));
+    HAL_Delay(30);
+    USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(MediaHIDTypeDef));
+  }
 }
 /* USER CODE END Application */
 

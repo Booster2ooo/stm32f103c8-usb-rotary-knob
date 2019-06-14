@@ -23,7 +23,6 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,8 +66,8 @@
 /* It's up to user to redefine and/or remove those define */
 //#define APP_RX_DATA_SIZE  1000
 //#define APP_TX_DATA_SIZE  1000
-#define APP_RX_DATA_SIZE	0x40
-#define APP_TX_DATA_SIZE	0x40
+#define APP_RX_DATA_SIZE  0x40
+#define APP_TX_DATA_SIZE  0x40
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -233,7 +232,12 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
-
+    {
+      USBD_SetupReqTypedef *req = (USBD_SetupReqTypedef *)pbuf;
+      if (req->wValue & 0x0001) {
+        Send_Greetings();
+      }
+    }
     break;
 
     case CDC_SEND_BREAK:
@@ -267,7 +271,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  utx(Buf, *Len);
+  Process_Command_Input(Buf, *Len);
+  //utx(Buf, *Len);
   return (USBD_OK);
   /* USER CODE END 6 */
 }

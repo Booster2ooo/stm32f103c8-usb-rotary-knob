@@ -4,6 +4,7 @@
 extern osThreadId defaultTaskHandle;
 
 // FreeRTOS Event Bits
+#define MAX_ROTARY 5
 #define ebPRESSED 0x1
 #define ebRELEASED 0x2
 #define ebCLOCKWISE 0x4
@@ -33,8 +34,8 @@ typedef struct
 
 typedef struct
 {
-	RotaryEncoderTypeDef *Rotary;
-	uint16_t EventCode;
+  RotaryEncoderTypeDef *Rotary;
+  uint16_t EventCode;
 } RotaryMail;
 
 extern RotaryEncoderTypeDef rotary1;
@@ -49,4 +50,4 @@ void Init_Rotary(RotaryEncoderTypeDef *rotary, uint16_t id, GPIO_TypeDef *clk_po
 void Debounce_Switch(RotaryEncoderTypeDef *rotary);
 int8_t Read_Rotary(RotaryEncoderTypeDef *rotary);
 void Compute_Rotary(RotaryEncoderTypeDef *rotary);
-void Send_Mail(RotaryEncoderTypeDef *rotary, uint16_t EventCode);
+void Send_Rotary_Mail(RotaryEncoderTypeDef *rotary, uint16_t EventCode);
