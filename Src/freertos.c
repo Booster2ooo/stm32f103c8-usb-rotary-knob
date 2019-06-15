@@ -284,6 +284,7 @@ void StartCommandHandlerTask(void const * argument)
       if (rptr->EventCode & ebWAITING)
       {
         utx(&rptr->LastValue, 1);
+        HAL_Delay(1);
       }
       else if (rptr->EventCode & ebCOMMAND)
       {

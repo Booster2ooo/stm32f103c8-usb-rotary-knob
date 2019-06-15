@@ -30,7 +30,7 @@ The device should be recognized as both a VCP and an HID (keyboard) so it could 
 The VCP interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
 
 ## [ ] Save/load config to/from flash/eeprom
-Once the rotary is programmed, the flash memory should be written for the configuration to be persistant when the device in unpluged/pluged again.
+Once the rotary is programmed, the flash memory should be written for the configuration to be persistant when the device is unpluged/pluged again.
 
 # Links
 Here are a few link to projects and articles that helped me during the process (aside from ST manuals):
