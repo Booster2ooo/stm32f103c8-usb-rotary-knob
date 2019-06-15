@@ -283,11 +283,11 @@ void StartCommandHandlerTask(void const * argument)
       }
       if (rptr->EventCode & ebWAITING)
       {
-        utx(rptr->LastBuf, rptr->LastLen);
+        utx(&rptr->LastValue, 1);
       }
       else if (rptr->EventCode & ebCOMMAND)
       {
-        printf("\r\n<< %s\r\n", rptr->Command);
+        printf("\r\n>> [OK] \"%s\" command accepted\r\n", rptr->Command);
       }
       else if (rptr->EventCode & ebOVERFLOWN)
       {

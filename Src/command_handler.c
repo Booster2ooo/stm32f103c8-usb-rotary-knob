@@ -31,7 +31,7 @@ void Init_Command_Handler()
 
 void Send_Greetings()
 {
-  Send_Command_Mail(ebCONNECTED, NULL, NULL);
+  Send_Command_Mail(ebCONNECTED, NULL);
 }
 
 void Process_Command_Input(uint8_t* Buf, uint32_t *Len)
@@ -39,30 +39,42 @@ void Process_Command_Input(uint8_t* Buf, uint32_t *Len)
   uint32_t i;
   for (i = 0; i < Len; i++)
   {
-    uint8_t lastValue =  *Buf;
+    uint8_t lastValue =  *Buf++;
     if (lastValue == '\n' || lastValue == '\r')
     {
+    	// enter
       if(Parse_Command())
       {
-        Send_Command_Mail(ebCOMMAND, NULL, NULL);
+        Send_Command_Mail(ebCOMMAND, NULL);
         Clear_Command_Stack();
       }
       else
       {
-        Send_Command_Mail(ebERROR, NULL, NULL);
+        Send_Command_Mail(ebERROR, NULL);
         Clear_Command_Stack();
       }
     }
     else if(size >= MAX_STACK_SIZE - 1)
     {
-      Send_Command_Mail(ebOVERFLOWN, NULL, NULL);
+    	// too long
+      Send_Command_Mail(ebOVERFLOWN, NULL);
       Clear_Command_Stack();
     }
-    else
-    {
+    else if( (lastValue == 0x8 || lastValue == 0x7F)
+    		&& size != 0
+		) {
+    	// backspace/delete
+    	size--;
+    	stack[size] = 0;
+      Send_Command_Mail(ebWAITING, lastValue);
+    }
+    else if ( (lastValue >= '0' && lastValue <= '9')
+    		|| (lastValue >= 'A' && lastValue <= 'Z')
+    		|| (lastValue >= 'a' && lastValue <= 'z')
+    ) {
       stack[size] = lastValue;
       size++;
-      Send_Command_Mail(ebWAITING, Buf, Len);
+      Send_Command_Mail(ebWAITING, lastValue);
     }
   }
 }
@@ -180,7 +192,7 @@ void Clear_Command_Stack()
   }
 }
 
-void Send_Command_Mail(uint16_t EventCode, uint8_t* Buf, uint32_t Len)
+void Send_Command_Mail(uint16_t EventCode, uint8_t lastValue)
 {
   CommandMail *mptr;
   mptr = osMailAlloc(commandMailQ, osWaitForever);
@@ -190,13 +202,9 @@ void Send_Command_Mail(uint16_t EventCode, uint8_t* Buf, uint32_t Len)
     return;
   }
   memcpy(mptr->Command, stack, MAX_STACK_SIZE);
-  if (Buf != NULL)
+  if (lastValue != NULL && lastValue != 0)
   {
-    mptr->LastBuf = Buf;
-  }
-  if (Len)
-  {
-    mptr->LastLen = Len;
+    mptr->LastValue = lastValue;
   }
   mptr->EventCode = EventCode;
   if(osMailPut(commandMailQ, mptr) != osOK)

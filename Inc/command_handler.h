@@ -8,19 +8,18 @@
 #include "mediakeyboard.h"
 
 #define MAX_STACK_SIZE 64
-#define ebERROR           0x0
-#define ebCONNECTED     0x1
-#define ebWAITING       0x2
-#define ebCOMMAND       0x4
-#define ebOVERFLOWN       0x8
-#define KEYBOARD_MODE   0x1
-#define MEDIA_MODE        0x2
+#define ebERROR						0x0
+#define ebCONNECTED				0x1
+#define ebWAITING					0x2
+#define ebCOMMAND					0x4
+#define ebOVERFLOWN				0x8
+#define KEYBOARD_MODE			0x1
+#define MEDIA_MODE				0x2
 
 typedef struct
 {
   uint8_t Command[MAX_STACK_SIZE];
-  uint8_t* LastBuf;
-  uint32_t LastLen;
+  uint8_t LastValue;
   uint16_t EventCode;
 } CommandMail;
 
@@ -50,4 +49,4 @@ uint8_t Parse_Command();
 void Send_Greetings();
 void Process_Command_Input(uint8_t* Buf, uint32_t *Len);
 void Clear_Command_Stack();
-void Send_Command_Mail(uint16_t EventCode, uint8_t* Buf, uint32_t Len);
+void Send_Command_Mail(uint16_t EventCode, uint8_t lastValue);
