@@ -6,6 +6,7 @@
 #include "cmsis_os.h"
 #include "rotary.h"
 #include "mediakeyboard.h"
+#include "flash_storage.h"
 
 #define MAX_STACK_SIZE 64
 #define ebERROR						0x0

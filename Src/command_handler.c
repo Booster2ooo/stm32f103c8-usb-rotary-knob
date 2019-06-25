@@ -14,18 +14,21 @@ void Init_Rotary_Action_Config(RotaryActionConfig *action_config)
 void Init_Command_Handler()
 {
   uint8_t i = 0;
-  for(i = 0; i < MAX_ROTARY; i++)
-  {
-    RotaryInteractionConfig interactionConfig = {0};
-    Init_Rotary_Action_Config(&interactionConfig.Clockwise);
-    Init_Rotary_Action_Config(&interactionConfig.Counterclockwise);
-    Init_Rotary_Action_Config(&interactionConfig.Pressed);
-    Init_Rotary_Action_Config(&interactionConfig.Released);
-    interactionConfig.Clockwise.Mode = MEDIA_MODE;
-    interactionConfig.Clockwise.Media.Key = USB_HID_VOL_UP;
-    interactionConfig.Counterclockwise.Mode = MEDIA_MODE;
-    interactionConfig.Counterclockwise.Media.Key = USB_HID_VOL_DEC;
-    rotary_configs[i] = interactionConfig;
+  Read_Flash_Config(FLASH_STORAGE_START_ADDRESS, &rotary_configs, sizeof(RotaryInteractionConfig) * MAX_ROTARY);
+  if (rotary_configs[0].Clockwise.Mode == 0xFF) {
+		for(i = 0; i < MAX_ROTARY; i++)
+		{
+			RotaryInteractionConfig interactionConfig = {0};
+			Init_Rotary_Action_Config(&interactionConfig.Clockwise);
+			Init_Rotary_Action_Config(&interactionConfig.Counterclockwise);
+			Init_Rotary_Action_Config(&interactionConfig.Pressed);
+			Init_Rotary_Action_Config(&interactionConfig.Released);
+			interactionConfig.Clockwise.Mode = MEDIA_MODE;
+			interactionConfig.Clockwise.Media.Key = USB_HID_VOL_UP;
+			interactionConfig.Counterclockwise.Mode = MEDIA_MODE;
+			interactionConfig.Counterclockwise.Media.Key = USB_HID_VOL_DEC;
+			rotary_configs[i] = interactionConfig;
+		}
   }
 }
 
@@ -179,6 +182,7 @@ uint8_t Parse_Command()
       return 0;
       break;
   }
+  Write_Flash_Config(FLASH_STORAGE_START_ADDRESS,  &rotary_configs, sizeof(RotaryInteractionConfig) * MAX_ROTARY);
   return 1;
 }
 
