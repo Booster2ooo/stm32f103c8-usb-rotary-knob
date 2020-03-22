@@ -33,7 +33,7 @@ The VCP interface should allow the user to program the key combination that are 
 Once the rotary is programmed, the flash memory should be written for the configuration to be persistant when the device is unpluged/pluged again.
 
 ## [ ] Make it right/make it fast
-Once the proof of concept is done, the next step are to review the code for design errors and performance improvments | "make it work, make it right make it fast"  - Kent Beck
+Once the proof of concept is done, the next steps are to review the code for design errors and performance improvments | "make it work, make it right make it fast"  - Kent Beck
 
 # Links
 Here are a few link to projects and articles that helped me during the process (aside from ST manuals):
