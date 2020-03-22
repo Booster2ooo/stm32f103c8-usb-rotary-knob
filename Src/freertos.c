@@ -275,7 +275,7 @@ void StartCommandHandlerTask(void const * argument)
       rptr = event.value.p;
       if (!rptr->EventCode)
       {
-        printf("\r\n>> [Error] \"%s\" unrecognized.\r\n", rptr->Command);
+        printf("\r\n>> [Error] \"%s\" unrecognized command.\r\n", rptr->Command);
       }
       else if (rptr->EventCode & ebCONNECTED)
       {
@@ -318,26 +318,26 @@ void Blink()
 
 void Switch_Rising(uint32_t rotary_id)
 {
-  printf("[%ld] Switch released (rising)\r\n", rotary_id / 0x10);
   Act(rotary_configs[rotary_id / 0x10].Released);
+  printf("[%ld] Switch released (rising)\r\n", rotary_id / 0x10);
 }
 
 void Switch_Falling(uint32_t rotary_id)
 {
-  printf("[%ld] Switch pressed (falling)\r\n", rotary_id /0x10);
   Act(rotary_configs[rotary_id / 0x10].Pressed);
+  printf("[%ld] Switch pressed (falling)\r\n", rotary_id /0x10);
 }
 
 void Clockwise(uint32_t rotary_id)
 {
-  printf("[%ld] Clockwise\r\n", rotary_id / 0x10);
   Act(rotary_configs[rotary_id / 0x10].Clockwise);
+  printf("[%ld] Clockwise\r\n", rotary_id / 0x10);
 }
 
 void Counter_Clockwise(uint32_t rotary_id)
 {
-  printf("[%ld] Counter-Clockwise\r\n", rotary_id / 0x10);
   Act(rotary_configs[rotary_id / 0x10].Counterclockwise);
+  printf("[%ld] Counter-Clockwise\r\n", rotary_id / 0x10);
 }
 
 void Act(RotaryActionConfig action_config)
@@ -345,14 +345,16 @@ void Act(RotaryActionConfig action_config)
   if (action_config.Mode == KEYBOARD_MODE)
   {
     USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&action_config.Keyboard, sizeof(KeyboardHIDTypeDef));
-    HAL_Delay(30);
+    HAL_Delay(5);
     USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&keyboardHID, sizeof(KeyboardHIDTypeDef));
+    HAL_Delay(5);
   }
   else if(action_config.Mode == MEDIA_MODE)
   {
     USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&action_config.Media, sizeof(MediaHIDTypeDef));
-    HAL_Delay(30);
+    HAL_Delay(5);
     USBD_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&mediaHID, sizeof(MediaHIDTypeDef));
+    HAL_Delay(5);
   }
 }
 /* USER CODE END Application */
