@@ -5,6 +5,7 @@ This is my first baremetal (and C) project. I choose to work with the STM32F103C
 
 Special thanks to sabu (email: sabu (at) serveur (dot) io) for his guidance, patience and help, this project wouldn't exist without him.
 
+![stm32f103c8-usb-rotary-knob picture](https://github.com/Booster2ooo/stm32f103c8-usb-rotary-knob/stm32f103c8-usb-rotary-knob.png?raw=true)
 
 # Project roadmap
 ## [x] Handle hardware inputs 
