@@ -33,7 +33,8 @@ The device should be recognized as both a VCP and an HID (keyboard) so it can:
 ## [x] Programming key combos
 The VCP interface should allow the user to program the key combination that are sent when the rotary is pressed, released, turned clockwiser or counter-clockwise.
 
-It's done by sending a command over serial with the following format: [rotaryId][inputType][actionType][mediaAction/modifierKey][key1][key2][key3]
+It's done by sending a command over serial with the following format: 
+`[rotaryId][inputType][actionType][mediaAction/modifierKey][key1][key2][key3]`
 
 - rotaryId: decimal interger representing the rotary index (1 to 5 depending on your initial configuration)
 - inputType: one letter (case insensitive) representing the input to listen for, can be:
@@ -48,8 +49,8 @@ It's done by sending a command over serial with the following format: [rotaryId]
 - (if keyboard mode) modifierKey/key1/key2/key3: hexadecimal intergers (4 x 2 digits) representing the keyboard keys sent over USB after the input has been received. See [mediakeyboard.h](https://github.com/Booster2ooo/stm32f103c8-usb-rotary-knob/blob/master/Inc/mediakeyboard.h) for the possible values.
 
 e.g.: 
-`1CM40<enter>`: configures the rotary #1 to send VOL_UP when turned clockwise
-`1CK014b0000<enter>`: configured the rotary #1 to send CTRL + Page UP when turned clockwise
+- `1CM40<enter>`: configures the rotary #1 to send VOL_UP when turned clockwise
+- `1CK014b0000<enter>`: configured the rotary #1 to send CTRL + Page UP when turned clockwise
 
 default is (conceptually, because it's configured straight away, not using COM commands):
 ```
